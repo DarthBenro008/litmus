@@ -8,6 +8,7 @@ data:
   DataBaseServer: "mongodb://mongo-service:27017"
   JWTSecret: "litmus-portal@123"
   DB_USER: "admin"
+  AuthDb: "mongo-service"
   DB_PASSWORD: "1234"
 ---
 apiVersion: apps/v1
@@ -168,7 +169,7 @@ spec:
             - containerPort: 8080
           imagePullPolicy: Always
         - name: auth-server
-          image: litmuschaos/litmusportal-auth-server:ci
+          image: darthbenro008/litmus-authserver:latest
           resources:
             limits:
               cpu: 200m
@@ -178,7 +179,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: litmus-portal-admin-config
-                  key: DataBaseServer
+                  key: AuthDb
             - name: JWT_SECRET
               valueFrom:
                 configMapKeyRef:
