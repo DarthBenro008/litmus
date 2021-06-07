@@ -8,7 +8,6 @@ data:
   DataBaseServer: "mongodb://mongo-service:27017"
   JWTSecret: "litmus-portal@123"
   DB_USER: "admin"
-  AuthDb: "mongo-service"
   DB_PASSWORD: "1234"
 ---
 apiVersion: apps/v1
@@ -179,7 +178,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: litmus-portal-admin-config
-                  key: AuthDb
+                  key: DataBaseServer
             - name: JWT_SECRET
               valueFrom:
                 configMapKeyRef:
