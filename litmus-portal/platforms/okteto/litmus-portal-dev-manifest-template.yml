@@ -198,6 +198,8 @@ spec:
               value: "admin"
             - name: ADMIN_PASSWORD
               value: "litmus"
+            - name: STRICT_PASSWORD_POLICY
+              value: "true"
           ports:
             - containerPort: 3000
           imagePullPolicy: Always
