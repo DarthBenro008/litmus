@@ -10,8 +10,8 @@ import (
 
 //UserRouter creates all the required routes for user authentications purposes.
 func UserRouter(router *gin.Engine, service user.Service) {
-	router.GET("/google/login", handlers.GoogleLogin())
-	router.GET("/google/callback", handlers.GoogleCallback(service))
+	router.GET("/dex/login", handlers.DexLogin())
+	router.GET("/dex/callback", handlers.DexCallback(service))
 	router.POST("/login", handlers.LoginUser(service))
 	router.Use(middleware.JwtMiddleware())
 	router.POST("/update/password", handlers.UpdatePassword(service))

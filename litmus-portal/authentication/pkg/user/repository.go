@@ -13,6 +13,7 @@ import (
 
 //Repository holds the mongo database implementation of the Service
 type Repository interface {
+	LoginUser(user *entities.User) (*entities.User, error)
 	FindUser(user *entities.User) (*entities.User, error)
 	UpdatePassword(userPassword *entities.UserPassword, isAdminBeingReset bool) error
 	CreateUser(user *entities.User) (*entities.User, error)
@@ -23,6 +24,30 @@ type Repository interface {
 
 type repository struct {
 	Collection *mongo.Collection
+}
+
+func (r repository) LoginUser(user *entities.User) (*entities.User, error) {
+	user.ID = uuid.Must(uuid.NewRandom()).String()
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), utils.PasswordEncryptionCost)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = string(hashedPassword)
+	_, err = r.Collection.InsertOne(context.Background(), user)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			var result = entities.User{}
+			findOneErr := r.Collection.FindOne(context.TODO(), bson.M{
+				"username": user.UserName,
+			}).Decode(&result)
+			if findOneErr != nil {
+				return nil, findOneErr
+			}
+			return &result, nil
+		}
+		return nil, err
+	}
+	return user.SanitizedUser(), nil
 }
 
 //FindUser helps to authenticate the user

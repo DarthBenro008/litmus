@@ -13,9 +13,48 @@ data:
   AgentScope: cluster
   AgentNamespace: litmus
   DataBaseServer: "mongodb://mongo-service:27017"
+  DexServer: "http://litmusportal-dex-service.litmus"
   JWTSecret: "litmus-portal@123"
   DB_USER: "admin"
   DB_PASSWORD: "1234"
+  config.yaml: |
+    issuer: http://litmusportal-dex-service.litmus
+
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+
+    web:
+      http: 0.0.0.0:5556
+
+    staticClients:
+      - id: example-app
+        redirectURIs:
+          - 'http://192.168.49.2:32000/callback'
+          - 'http://localhost:8080/auth/dex/callback'
+          - 'localhost:8080/auth/dex/callback'
+          - '/auth/dex/callback'
+        name: 'Example App'
+        secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+
+    connectors:
+      - type: google
+        id: google
+        name: Google
+        config:
+          issuer: https://accounts.google.com
+          clientID: CLIENT_ID
+          clientSecret: CLIENT_SECRET
+          redirectURI: http://localhost:8080/dex/callback
+
+      - type: github
+        id: github
+        name: GitHub
+        config:
+          clientID: CLIENT_ID
+          clientSecret: CLIENT_SECRET
+          redirectURI: http://localhost:8080/dex/callback
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -200,6 +239,11 @@ spec:
                 configMapKeyRef:
                   name: litmus-portal-admin-config
                   key: DataBaseServer
+            - name: OIDC_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: litmus-portal-admin-config
+                  key: DexServer
             - name: JWT_SECRET
               valueFrom:
                 configMapKeyRef:
@@ -222,6 +266,21 @@ spec:
           ports:
             - containerPort: 3000
           imagePullPolicy: Never
+      #   - name: dex-server
+      #     image: dexidp/dex:v2.27.0
+      #     command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
+      #     ports:
+      #       - containerPort: 5556
+      #     volumeMounts:
+      #       - name: config
+      #         mountPath: /etc/dex/cfg
+      # volumes:
+      #   - name: config
+      #     configMap:
+      #       name: litmus-portal-admin-config
+      #       items:
+      #       - key: config.yaml
+      #         path: config.yaml
       serviceAccountName: litmus-server-account
 ---
 apiVersion: v1
@@ -238,8 +297,63 @@ spec:
     - name: auth-server
       port: 9003
       targetPort: 3000
+    # - name: dex-server
+    #   port: 9004
+    #   targetPort: 5556
+    #   nodePort: 32000
   selector:
     component: litmusportal-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litmusportal-dex-server
+  namespace: litmus
+  labels:
+    component: litmusportal-dex-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: litmusportal-dex-server
+  template:
+    metadata:
+      labels:
+        component: litmusportal-dex-server
+    spec:
+      containers:
+        - name: dex-server
+          image: dexidp/dex:v2.27.0
+          command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
+          ports:
+            - containerPort: 5556
+          volumeMounts:
+            - name: config
+              mountPath: /etc/dex/cfg
+      volumes:
+        - name: config
+          configMap:
+            name: litmus-portal-admin-config
+            items:
+            - key: config.yaml
+              path: config.yaml
+      serviceAccountName: litmus-server-account
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litmusportal-dex-service
+  namespace: litmus
+spec:
+  type: NodePort
+  ports:
+    - name: dex-server
+      port: 80
+      protocol: TCP
+      targetPort: 5556
+      nodePort: 32000
+  selector:
+    component: litmusportal-dex-server
 ---
 apiVersion: apps/v1
 kind: StatefulSet

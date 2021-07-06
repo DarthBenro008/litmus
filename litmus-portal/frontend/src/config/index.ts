@@ -2,6 +2,7 @@ const loc = window.location;
 let sockURL;
 let authURL;
 let apiURL;
+let dexURL;
 if (loc.protocol === 'https:') {
   sockURL = 'wss:';
 } else {
@@ -13,10 +14,12 @@ if (
 ) {
   authURL = `${window.location.protocol}//${window.location.hostname}:3000`;
   apiURL = `${window.location.protocol}//${window.location.hostname}:8080`;
+  dexURL = `${window.location.protocol}//${window.location.hostname}:5556`;
   sockURL += `//${window.location.hostname}:8080`;
 } else {
   authURL = '/auth';
   apiURL = '/api';
+  dexURL = '/dexAuth'
   sockURL += `//${loc.host}/ws`;
 }
 export default {

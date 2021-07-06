@@ -6,6 +6,7 @@ import (
 
 //Service creates a service for user authentication operations
 type Service interface {
+	LoginUser(user *entities.User) (*entities.User, error)
 	FindUser(user *entities.User) (*entities.User, error)
 	UpdatePassword(userPassword *entities.UserPassword, isAdminBeingReset bool) error
 	CreateUser(user *entities.User) (*entities.User, error)
@@ -16,6 +17,10 @@ type Service interface {
 
 type service struct {
 	repository Repository
+}
+
+func (s service) LoginUser(user *entities.User) (*entities.User, error) {
+	return s.repository.LoginUser(user)
 }
 
 //FindUser is the definition of finding an user from database
