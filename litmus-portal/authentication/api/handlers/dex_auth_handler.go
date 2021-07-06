@@ -31,11 +31,11 @@ func oAuthDexConfig() *oauth2.Config {
 	incomingEndpoints.TokenURL = "/dex/token"
 	verifier = provider.Verifier(&oidc.Config{ClientID: "example-app"})
 	return &oauth2.Config{
-		RedirectURL:  "/auth/dex/callback",
+		RedirectURL:  "http://localhost:8080/auth/dex/callback",
 		ClientID:     "example-app",              //os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 		ClientSecret: "ZXhhbXBsZS1hcHAtc2VjcmV0", //os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
 		Scopes:       []string{"openid", "profile", "email"},
-		Endpoint:     incomingEndpoints,
+		Endpoint:     provider.Endpoint(),
 	}
 }
 

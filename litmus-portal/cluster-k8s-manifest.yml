@@ -13,12 +13,12 @@ data:
   AgentScope: cluster
   AgentNamespace: litmus
   DataBaseServer: "mongodb://mongo-service:27017"
-  DexServer: "http://litmusportal-dex-service.litmus"
+  DexServer: "http://192.168.49.2:32000"
   JWTSecret: "litmus-portal@123"
   DB_USER: "admin"
   DB_PASSWORD: "1234"
   config.yaml: |
-    issuer: http://litmusportal-dex-service.litmus
+    issuer: http://192.168.49.2:32000
 
     storage:
       type: kubernetes
@@ -46,15 +46,15 @@ data:
           issuer: https://accounts.google.com
           clientID: CLIENT_ID
           clientSecret: CLIENT_SECRET
-          redirectURI: http://localhost:8080/dex/callback
+          redirectURI: http://192.168.49.2:32000/callback
 
       - type: github
         id: github
         name: GitHub
         config:
-          clientID: CLIENT_ID
-          clientSecret: CLIENT_SECRET
-          redirectURI: http://localhost:8080/dex/callback
+          clientID: ID
+          clientSecret: SECRET
+          redirectURI: http://192.168.49.2:32000/callback
 ---
 apiVersion: apps/v1
 kind: Deployment
