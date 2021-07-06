@@ -23,9 +23,9 @@ export function getToken(): string {
   const jwtToken = getJWTToken('token');
 
   // Logout user if jwt is expired
-  if (jwtToken === '') {
-    history.push('/login');
-  }
+  // if (jwtToken === '') {
+  //   history.push('/login');
+  // }
 
   return jwtToken;
 }
@@ -42,7 +42,7 @@ export function setUserDetails(token: string) {
 // Returns the details of a user from jwt token
 export function getUserDetailsFromJwt(): UserDetails {
   const jwtToken = getToken();
-  const userDetails = jwtDecode.decode(jwtToken) as UserDetails;
+  const userDetails = jwtDecode.decode(jwtToken) as unknown as UserDetails;
   return userDetails;
 }
 

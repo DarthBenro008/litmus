@@ -36,8 +36,8 @@ spec:
     spec:
       containers:
         - name: litmusportal-frontend
-          image: litmuschaos/litmusportal-frontend:ci
-          imagePullPolicy: Always
+          image: litmusportal-frontend
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:
@@ -187,8 +187,12 @@ spec:
             - containerPort: 8080
           imagePullPolicy: Always
         - name: auth-server
-          image: litmuschaos/litmusportal-auth-server:ci
+          image: litmus-authserver
           env:
+            - name: GOOGLE_OAUTH_CLIENT_SECRET
+              value: UqSikOn4zN_9_vA9m12eZHNu
+            - name: GOOGLE_OAUTH_CLIENT_ID
+              value: 789438490231-pt50g50doumu9kit7nccdknsa3b37gvk.apps.googleusercontent.com
             - name: STRICT_PASSWORD_POLICY
               value: "false"
             - name: DB_SERVER
@@ -217,7 +221,7 @@ spec:
               value: "litmus"
           ports:
             - containerPort: 3000
-          imagePullPolicy: Always
+          imagePullPolicy: Never
       serviceAccountName: litmus-server-account
 ---
 apiVersion: v1
