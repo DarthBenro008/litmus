@@ -1,6 +1,7 @@
 import { Tooltip, Typography } from '@material-ui/core';
 import { ButtonFilled, InputField } from 'litmus-ui';
-import React, { useState } from 'react';
+import React, { useEffect,useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Loader from '../../components/Loader';
 import config from '../../config';
@@ -24,6 +25,18 @@ const LoginPage: React.FC = () => {
     username: '',
     password: '',
   });
+  const { search } = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const accessToken = params.get('jwtToken');
+    if (accessToken) {
+      console.log('token', accessToken);
+      setUserDetails(accessToken);
+      setIsLoading(false);
+      window.location.assign('/getStarted');
+    }
+  }, []);
 
   const responseCode = 200;
   const loaderSize = 20;
