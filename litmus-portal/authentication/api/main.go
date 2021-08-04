@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"litmus/litmus-portal/authentication/api/routes"
 	"litmus/litmus-portal/authentication/pkg/entities"
+	"litmus/litmus-portal/authentication/pkg/server_configs"
 	"litmus/litmus-portal/authentication/pkg/user"
 	"litmus/litmus-portal/authentication/pkg/utils"
 	"runtime"
@@ -39,7 +40,11 @@ func main() {
 	userCollection := db.Collection(utils.CollectionName)
 	userRepo := user.NewRepo(userCollection)
 	userService := user.NewService(userRepo)
-	validatedAdminSetup(userService)
+
+	serverConfigCollection := db.Collection(utils.ServerConfigCollectionName)
+	serverConfigRepo := server_configs.NewRepo(serverConfigCollection)
+	serverConfigService := server_configs.NewService(serverConfigRepo)
+	validatedAdminSetup(userService, serverConfigService)
 
 	gin.SetMode(gin.ReleaseMode)
 	gin.EnableJsonDecoderDisallowUnknownFields()
@@ -56,7 +61,7 @@ func main() {
 	}
 }
 
-func validatedAdminSetup(service user.Service) {
+func validatedAdminSetup(userService user.Service, serverConfigService server_configs.Service) {
 	configs := map[string]string{"ADMIN_PASSWORD": utils.AdminPassword, "ADMIN_USERNAME": utils.AdminName, "DB_USER": utils.DBUser, "DB_SERVER": utils.DBUrl, "DB_NAME": utils.DBName, "DB_PASSWORD": utils.DBPassword, "JWT_SECRET": utils.JwtSecret}
 	for configName, configValue := range configs {
 		if configValue == "" {
@@ -84,12 +89,20 @@ func validatedAdminSetup(service user.Service) {
 		CreatedAt: &createdAt,
 	}
 
-	_, err = service.CreateUser(&adminUser)
+	defaultServerConfigs := entities.ServerConfigs{
+		GlobalOAuthConfig: utils.GlobalOauth,
+	}
+
+	_, err = userService.CreateUser(&adminUser)
 	if err == utils.ErrUserExists {
 		log.Println("Admin already exists in the database, not creating a new admin")
 	}
 	if err != nil && err != utils.ErrUserExists {
 		log.Panicf("Unable to create admin, error: %s", err)
+	}
+	err = serverConfigService.SetServerConfigs(&defaultServerConfigs)
+	if err != nil {
+		log.Panicf("Unable to create default configurations, error: %s", err)
 	}
 }
 

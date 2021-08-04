@@ -6,23 +6,25 @@ import (
 )
 
 var (
-	JwtSecret              = os.Getenv("JWT_SECRET")
-	AdminName              = os.Getenv("ADMIN_USERNAME")
-	AdminPassword          = os.Getenv("ADMIN_PASSWORD")
-	DBUrl                  = os.Getenv("DB_SERVER")
-	DBUser                 = os.Getenv("DB_USER")
-	DBPassword             = os.Getenv("DB_PASSWORD")
-	JWTExpiryDuration      = getEnvAsInt("JWT_EXPIRY_MINS", 1440)
-	StrictPasswordPolicy   = getEnvAsBool("STRICT_PASSWORD_POLICY", false)
-	OidcIssuer             = os.Getenv("OIDC_ISSUER")
-	ClientId               = os.Getenv("DEX_OAUTH_CLIENT_ID")
-	ClientSecret           = os.Getenv("DEX_OAUTH_CLIENT_SECRET")
-	CallbackUrl            = os.Getenv("DEX_OAUTH_CALLBACK_URL")
-	DBName                 = "auth"
-	Port                   = ":3000"
-	CollectionName         = "usercredentials"
-	UsernameField          = "username"
-	PasswordEncryptionCost = 15
+	JwtSecret                  = os.Getenv("JWT_SECRET")
+	AdminName                  = os.Getenv("ADMIN_USERNAME")
+	AdminPassword              = os.Getenv("ADMIN_PASSWORD")
+	DBUrl                      = os.Getenv("DB_SERVER")
+	DBUser                     = os.Getenv("DB_USER")
+	DBPassword                 = os.Getenv("DB_PASSWORD")
+	JWTExpiryDuration          = getEnvAsInt("JWT_EXPIRY_MINS", 1440)
+	StrictPasswordPolicy       = getEnvAsBool("STRICT_PASSWORD_POLICY", false)
+	OidcIssuer                 = os.Getenv("OIDC_ISSUER")
+	ClientId                   = os.Getenv("DEX_OAUTH_CLIENT_ID")
+	ClientSecret               = os.Getenv("DEX_OAUTH_CLIENT_SECRET")
+	CallbackUrl                = os.Getenv("DEX_OAUTH_CALLBACK_URL")
+	GlobalOauth                = getEnvAsBool("GLOBAL_OAUTH", false)
+	DBName                     = "auth"
+	Port                       = ":3000"
+	CollectionName             = "usercredentials"
+	ServerConfigCollectionName = "server_configs"
+	UsernameField              = "username"
+	PasswordEncryptionCost     = 15
 )
 
 func getEnvAsInt(name string, defaultVal int) int {

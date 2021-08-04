@@ -1,5 +1,6 @@
 package entities
 
 type ServerConfigs struct {
-	GlobalOAuthConfig bool `bson:"global_oauth_config,omitempty" json:"global_oauth_config,omitempty"`
+	ID                string `bson:"_id,omitempty" json:"_id"`
+	GlobalOAuthConfig bool   `bson:"global_oauth_config" json:"global_oauth_config"`
 }

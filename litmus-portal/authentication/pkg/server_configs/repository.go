@@ -4,12 +4,13 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"litmus/litmus-portal/authentication/pkg/entities"
 )
 
 type Repository interface {
 	GetServerConfigs() (*entities.ServerConfigs, error)
-	SetServerConfigs(configs entities.ServerConfigs) error
+	SetServerConfigs(configs *entities.ServerConfigs) error
 }
 
 type repository struct {
@@ -25,10 +26,11 @@ func (r repository) GetServerConfigs() (*entities.ServerConfigs, error) {
 	return &result, nil
 }
 
-func (r repository) SetServerConfigs(configs entities.ServerConfigs) error {
-	data, _ := toDoc(configs)
-	_, err := r.Collection.UpdateOne(context.Background(), bson.M{}, bson.M{"$set": data})
+func (r repository) SetServerConfigs(configs *entities.ServerConfigs) error {
+	opts := options.Update().SetUpsert(true)
+	_, err := r.Collection.UpdateOne(context.Background(), bson.M{}, bson.M{"$set": configs}, opts)
 	if err != nil {
+		println(err)
 		return err
 	}
 	return nil
