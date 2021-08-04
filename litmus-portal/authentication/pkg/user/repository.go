@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"litmus/litmus-portal/authentication/pkg/entities"
 	"litmus/litmus-portal/authentication/pkg/utils"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 
 //Repository holds the mongo database implementation of the Service
 type Repository interface {
+	LoginUser(user *entities.User) (*entities.User, error)
 	FindUser(username string) (*entities.User, error)
 	CheckPasswordHash(hash, password string) error
 	UpdatePassword(userPassword *entities.UserPassword, isAdminBeingReset bool) error
@@ -26,6 +28,31 @@ type Repository interface {
 
 type repository struct {
 	Collection *mongo.Collection
+}
+
+// LoginUser is used for Oauth Login purposes and creates a user, if already exists, returns the found user.
+func (r repository) LoginUser(user *entities.User) (*entities.User, error) {
+	user.ID = uuid.Must(uuid.NewRandom()).String()
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), utils.PasswordEncryptionCost)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = string(hashedPassword)
+	_, err = r.Collection.InsertOne(context.Background(), user)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			var result = entities.User{}
+			findOneErr := r.Collection.FindOne(context.TODO(), bson.M{
+				"username": user.UserName,
+			}).Decode(&result)
+			if findOneErr != nil {
+				return nil, findOneErr
+			}
+			return &result, nil
+		}
+		return nil, err
+	}
+	return user.SanitizedUser(), nil
 }
 
 // FindUser finds and returns a user if it exists

@@ -14,6 +14,9 @@ var (
 	DBPassword             = os.Getenv("DB_PASSWORD")
 	JWTExpiryDuration      = getEnvAsInt("JWT_EXPIRY_MINS", 1440)
 	StrictPasswordPolicy   = getEnvAsBool("STRICT_PASSWORD_POLICY", false)
+	OidcIssuer             = os.Getenv("OIDC_ISSUER")
+	ClientId               = os.Getenv("DEX_OAUTH_CLIENT_ID")
+	ClientSecret           = os.Getenv("DEX_OAUTH_CLIENT_SECRET")
 	DBName                 = "auth"
 	Port                   = ":3000"
 	CollectionName         = "usercredentials"
