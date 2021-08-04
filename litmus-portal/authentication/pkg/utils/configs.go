@@ -19,6 +19,7 @@ var (
 	ClientSecret               = os.Getenv("DEX_OAUTH_CLIENT_SECRET")
 	CallbackUrl                = os.Getenv("DEX_OAUTH_CALLBACK_URL")
 	GlobalOauth                = getEnvAsBool("GLOBAL_OAUTH", false)
+	RequiredOauthApprovals     = getEnvAsBool("REQUIRED_OAUTH_APPROVALS", false)
 	DBName                     = "auth"
 	Port                       = ":3000"
 	CollectionName             = "usercredentials"

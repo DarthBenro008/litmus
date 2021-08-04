@@ -19,7 +19,7 @@ type repository struct {
 
 func (r repository) GetServerConfigs() (*entities.ServerConfigs, error) {
 	var result = entities.ServerConfigs{}
-	_, findErr := r.Collection.Find(context.Background(), bson.M{})
+	findErr := r.Collection.FindOne(context.Background(), bson.M{}).Decode(&result)
 	if findErr != nil {
 		return nil, findErr
 	}

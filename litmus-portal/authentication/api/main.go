@@ -54,7 +54,7 @@ func main() {
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 	}))
-	routes.UserRouter(app, userService)
+	routes.UserRouter(app, userService, serverConfigService)
 	err = app.Run(utils.Port)
 	if err != nil {
 		log.Fatalf("Failure to start litmus-portal authentication server due to %s", err)
@@ -82,15 +82,17 @@ func validatedAdminSetup(userService user.Service, serverConfigService server_co
 	createdAt := strconv.FormatInt(time.Now().Unix(), 10)
 
 	adminUser := entities.User{
-		ID:        uID,
-		UserName:  utils.AdminName,
-		Password:  password,
-		Role:      entities.RoleAdmin,
-		CreatedAt: &createdAt,
+		ID:           uID,
+		UserName:     utils.AdminName,
+		Password:     password,
+		Role:         entities.RoleAdmin,
+		CreatedAt:    &createdAt,
+		OAuthAllowed: utils.GlobalOauth,
 	}
 
 	defaultServerConfigs := entities.ServerConfigs{
-		GlobalOAuthConfig: utils.GlobalOauth,
+		GlobalOAuthConfig:     utils.GlobalOauth,
+		RequiredOAuthApproval: utils.RequiredOauthApprovals,
 	}
 
 	_, err = userService.CreateUser(&adminUser)

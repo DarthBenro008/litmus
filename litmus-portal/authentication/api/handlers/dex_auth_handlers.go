@@ -8,6 +8,7 @@ import (
 	"golang.org/x/oauth2"
 	"litmus/litmus-portal/authentication/api/presenter"
 	"litmus/litmus-portal/authentication/pkg/entities"
+	"litmus/litmus-portal/authentication/pkg/server_configs"
 	"litmus/litmus-portal/authentication/pkg/user"
 	"litmus/litmus-portal/authentication/pkg/utils"
 	"net/http"
@@ -46,9 +47,19 @@ func oAuthDexConfig() (*oauth2.Config, error) {
 	}, nil
 }
 
-func DexLogin() gin.HandlerFunc {
+func DexLogin(serverConfigService server_configs.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		isOauthEnabledByAdmin, err := serverConfigService.GetGlobalOAuthConfig()
+		if err != nil {
+			log.Error(err)
+			c.JSON(utils.ErrorStatusCodes[utils.ErrServerError], presenter.CreateErrorResponse(utils.ErrServerError))
+			return
+		}
+		if !isOauthEnabledByAdmin {
+			log.Info("Oauth has been disabled by the admin")
+			c.JSON(utils.ErrorStatusCodes[utils.ErrOauthDisabled], presenter.CreateErrorResponse(utils.ErrOauthDisabled))
+			return
+		}
 		tempState, err := utils.GenerateRandomString()
 		state = tempState
 		if err != nil {
@@ -66,7 +77,7 @@ func DexLogin() gin.HandlerFunc {
 	}
 }
 
-func DexCallback(userService user.Service) gin.HandlerFunc {
+func DexCallback(userService user.Service, serverConfigService server_configs.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Query("state") != state {
 			c.Redirect(http.StatusTemporaryRedirect, redirectUrl)
@@ -101,16 +112,32 @@ func DexCallback(userService user.Service) gin.HandlerFunc {
 			c.Redirect(http.StatusPermanentRedirect, redirectUrl)
 			return
 		}
+		serverConfigs, err := serverConfigService.GetAllServerConfigs()
+		if err != nil {
+			log.Error("Cannot get server configs")
+			c.Redirect(http.StatusPermanentRedirect, redirectUrl)
+			return
+		}
+
 		var userData = entities.User{
-			Name:     tokenClaims.Name,
-			Email:    tokenClaims.Email,
-			UserName: tokenClaims.Email,
-			Role:     entities.RoleUser,
+			Name:         tokenClaims.Name,
+			Email:        tokenClaims.Email,
+			UserName:     tokenClaims.Email,
+			Role:         entities.RoleUser,
+			OAuthAllowed: serverConfigs.DecideOAuthStatus(),
 		}
 		signedInUser, err := userService.LoginUser(&userData)
 		if err != nil {
 			log.Error(err)
 			c.JSON(utils.ErrorStatusCodes[utils.ErrServerError], presenter.CreateErrorResponse(utils.ErrServerError))
+			return
+		}
+		if serverConfigs.RequiredOAuthApproval && !signedInUser.OAuthAllowed {
+			c.JSON(utils.ErrorStatusCodes[utils.ErrOauthNotApproved], presenter.CreateErrorResponse(utils.ErrOauthNotApproved))
+			return
+		}
+		if !signedInUser.OAuthAllowed {
+			c.JSON(utils.ErrorStatusCodes[utils.ErrOauthDisabled], presenter.CreateErrorResponse(utils.ErrOauthDisabled))
 			return
 		}
 		jwtToken, err := signedInUser.GetSignedJWT()

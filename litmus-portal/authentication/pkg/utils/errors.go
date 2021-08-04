@@ -17,6 +17,8 @@ var (
 	ErrUpdatingAdmin                 AppError = errors.New("cannot remove admin")
 	ErrUserDeactivated               AppError = errors.New("your account has been deactivated")
 	ErrUserAlreadyDeactivated        AppError = errors.New("user already deactivated")
+	ErrOauthDisabled                 AppError = errors.New("oauth_disabled")
+	ErrOauthNotApproved              AppError = errors.New("oauth_not_approved")
 )
 
 // ErrorStatusCodes holds the http status codes for every AppError
@@ -31,10 +33,14 @@ var ErrorStatusCodes = map[AppError]int{
 	ErrUpdatingAdmin:                 400,
 	ErrUserDeactivated:               400,
 	ErrUserAlreadyDeactivated:        400,
+	ErrOauthDisabled:                 401,
+	ErrOauthNotApproved:              401,
 }
 
 // ErrorDescriptions holds detailed error description for every AppError
 var ErrorDescriptions = map[AppError]string{
+	ErrOauthDisabled:                 "OAuth has been disabled by the admin",
+	ErrOauthNotApproved:              "OAuth account has not been approved by the admin",
 	ErrServerError:                   "The authorization server encountered an unexpected condition that prevented it from fulfilling the request",
 	ErrInvalidCredentials:            "Invalid Credentials",
 	ErrInvalidRequest:                "The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed",
