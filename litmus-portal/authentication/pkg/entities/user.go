@@ -19,6 +19,7 @@ type User struct {
 	CreatedAt     *string `bson:"created_at,omitempty" json:"created_at,omitempty"`
 	UpdatedAt     *string `bson:"updated_at,omitempty" json:"updated_at,omitempty"`
 	DeactivatedAt *string `bson:"deactivated_at,omitempty" json:"deactivated_at,omitempty"`
+	OAuthAllowed  bool    `bson:"oauth_allowed,omitempty" json:"oauth_allowed,omitempty"`
 }
 
 // UserDetails is used to update user's personal details
