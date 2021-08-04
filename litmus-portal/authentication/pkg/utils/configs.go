@@ -17,6 +17,7 @@ var (
 	OidcIssuer             = os.Getenv("OIDC_ISSUER")
 	ClientId               = os.Getenv("DEX_OAUTH_CLIENT_ID")
 	ClientSecret           = os.Getenv("DEX_OAUTH_CLIENT_SECRET")
+	CallbackUrl            = os.Getenv("DEX_OAUTH_CALLBACK_URL")
 	DBName                 = "auth"
 	Port                   = ":3000"
 	CollectionName         = "usercredentials"

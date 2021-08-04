@@ -35,12 +35,10 @@ func oAuthDexConfig() (*oauth2.Config, error) {
 		log.Errorf("Something wrong with connecting to Dex oidc provider %s", err)
 		return nil, err
 	}
-	incomingEndpoints := provider.Endpoint()
-	incomingEndpoints.AuthURL = "/dex/auth"
-	incomingEndpoints.TokenURL = "/dex/token"
+
 	verifier = provider.Verifier(&oidc.Config{ClientID: utils.ClientId})
 	return &oauth2.Config{
-		RedirectURL:  "http://localhost:8080/auth/dex/callback",
+		RedirectURL:  utils.CallbackUrl,
 		ClientID:     utils.ClientId,
 		ClientSecret: utils.ClientSecret,
 		Scopes:       []string{"openid", "profile", "email"},
