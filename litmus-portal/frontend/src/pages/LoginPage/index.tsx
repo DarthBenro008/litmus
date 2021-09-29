@@ -25,18 +25,17 @@ const LoginPage: React.FC = () => {
     username: '',
     password: '',
   });
-  const { search } = useLocation();
+  // const { search } = useLocation();
 
-  useEffect(() => {
-    const params = new URLSearchParams(search);
-    const accessToken = params.get('jwtToken');
-    if (accessToken) {
-      console.log('token', accessToken);
-      setUserDetails(accessToken);
-      setIsLoading(false);
-      window.location.assign('/getStarted');
-    }
-  }, []);
+  // useEffect(() => {
+    
+  //   if (accessToken) {
+  //     console.log('token', accessToken);
+  //     setUserDetails(accessToken);
+  //     setIsLoading(false);
+  //     window.location.assign('/getStarted');
+  //   }
+  // }, []);
 
   const responseCode = 200;
   const loaderSize = 20;
