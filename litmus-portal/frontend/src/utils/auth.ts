@@ -1,5 +1,6 @@
 import jwtDecode from 'jsonwebtoken';
 import { history } from '../redux/configureStore';
+import { getJwtTokenFromURL } from './getSearchParams';
 import { getJWTToken, setCookie, setJWTToken } from './cookies';
 
 interface UserDetails {
@@ -20,11 +21,17 @@ export function logout() {
 
 // Returns the jwt token
 export function getToken(): string {
-  const jwtToken = getJWTToken('token');
+  let jwtToken = getJWTToken('token');
 
-  // Logout user if jwt is expired
   if (jwtToken === '') {
-    history.push('/login');
+    const _tokenFromUrl = getJwtTokenFromURL();
+    if (_tokenFromUrl !== '') {
+      jwtToken = _tokenFromUrl;
+      setUserDetails(jwtToken);
+      window.location.assign('/getStarted');
+    } else {
+      history.push('/login');
+    }
   }
 
   return jwtToken;
