@@ -14,6 +14,11 @@ var (
 	DBPassword             = os.Getenv("DB_PASSWORD")
 	JWTExpiryDuration      = getEnvAsInt("JWT_EXPIRY_MINS", 1440)
 	StrictPasswordPolicy   = getEnvAsBool("STRICT_PASSWORD_POLICY", false)
+	DexEnabled             = getEnvAsBool("DEX_ENABLED", false)
+	DexCallBackURL         = os.Getenv("DEX_OAUTH_CALLBACK_URL")
+	DexClientID            = os.Getenv("DEX_OAUTH_CLIENT_ID")
+	DexClientSecret        = os.Getenv("DEX_OAUTH_CLIENT_SECRET")
+	DexOIDCIssuer          = os.Getenv("OIDC_ISSUER")
 	DBName                 = "auth"
 	Port                   = ":3000"
 	CollectionName         = "usercredentials"
