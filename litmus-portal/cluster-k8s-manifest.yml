@@ -395,35 +395,6 @@ kind: ServiceAccount
 metadata:
   name: litmus-server-account
   namespace: litmus
-# ---
-# apiVersion: rbac.authorization.k8s.io/v1beta1
-# kind: ClusterRole
-# metadata:
-#   name: litmus-server
-#   namespace: litmus
-#   labels:
-#     name: litmus-server
-# rules:
-#   - apiGroups:
-#       - "*"
-#     resources:
-#       - "*"
-#     verbs:
-#       - "*"
-# ---
-# apiVersion: rbac.authorization.k8s.io/v1beta1
-# kind: ClusterRoleBinding
-# metadata:
-#   name: litmus-server-rb
-#   namespace: litmus
-# subjects:
-#   - kind: ServiceAccount
-#     name: litmus-server-account
-#     namespace: litmus
-# roleRef:
-#   kind: ClusterRole
-#   name: litmus-server
-#   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -443,44 +414,6 @@ data:
   DEX_OAUTH_CLIENT_SECRET: "ZXhhbXBsZS1hcHAtc2VjcmV0"
   DEX_ENABLED: "true"
   VERSION: "ci"
-  config.yaml: |
-    issuer: http://192.168.49.2:32000
-
-    storage:
-      type: kubernetes
-      config:
-        inCluster: true
-
-    web:
-      http: 0.0.0.0:5556
-
-    staticClients:
-      - id: LitmusPortalAuthBackend
-        redirectURIs:
-          - '/auth/dex/callback'
-          - 'http://localhost:8080/auth/dex/callback'
-        name: 'LitmusPortalAuthBackend'
-        secret: ZXhhbXBsZS1hcHAtc2VjcmV0
-    
-    oauth2:
-        skipApprovalScreen: true
-
-    connectors:
-      - type: google
-        id: google
-        name: Google
-        config:
-          clientID: 789438490231-pt50g50doumu9kit7nccdknsa3b37gvk.apps.googleusercontent.com
-          clientSecret: UqSikOn4zN_9_vA9m12eZHNu
-          redirectURI: http://127.0.0.1:5556/dex/callback
-
-      - type: github
-        id: github
-        name: GitHub
-        config:
-          clientID: 38f2d6bf813bc4899931
-          clientSecret: 66481ead99369cc9e4a9f40ffa47198b2243a2c8
-          redirectURI: http://192.168.49.2:32000/callback
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -531,14 +464,6 @@ data:
             proxy_set_header   X-Forwarded-For      $proxy_add_x_forwarded_for;
             proxy_set_header   X-Forwarded-Proto    $scheme;
             proxy_pass "http://litmusportal-server-service:9002/";
-        }
-
-        location /dex/ {
-            proxy_set_header   Host                 $host;
-            proxy_set_header   X-Real-IP            $remote_addr;
-            proxy_set_header   X-Forwarded-For      $proxy_add_x_forwarded_for;
-            proxy_set_header   X-Forwarded-Proto    $scheme;
-            proxy_pass "http://litmusportal-dex-service:80/";
         }
 
         location /ws/ {
@@ -693,58 +618,6 @@ spec:
             - containerPort: 3000
           imagePullPolicy: Never
       serviceAccountName: litmus-server-account
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: litmusportal-dex-server
-  namespace: litmus
-  labels:
-    component: litmusportal-dex-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      component: litmusportal-dex-server
-  template:
-    metadata:
-      labels:
-        component: litmusportal-dex-server
-    spec:
-      serviceAccountName: litmus-server-account
-      containers:
-        - name: dex-server
-          imagePullPolicy: Never
-          image: litmus-dex
-          command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
-          ports:
-            - containerPort: 5556
-          volumeMounts:
-            - name: config
-              mountPath: /etc/dex/cfg
-      volumes:
-        - name: config
-          configMap:
-            name: litmus-portal-admin-config
-            items:
-              - key: config.yaml
-                path: config.yaml
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: litmusportal-dex-service
-  namespace: litmus
-spec:
-  type: NodePort
-  ports:
-    - name: dex-server
-      port: 80
-      protocol: TCP
-      targetPort: 5556
-      nodePort: 32000
-  selector:
-    component: litmusportal-dex-server
 ---
 apiVersion: v1
 kind: Service

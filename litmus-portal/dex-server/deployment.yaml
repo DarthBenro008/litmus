@@ -1,0 +1,89 @@
+# ConfigMap for DexServer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dex-server-admin-config
+  namespace: litmus
+data:
+  config.yaml: |
+    issuer: http://192.168.49.2:32000
+
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+
+    web:
+      http: 0.0.0.0:5556
+
+    staticClients:
+      - id: LitmusPortalAuthBackend
+        redirectURIs:
+          - '/auth/dex/callback'
+          - 'http://localhost:8080/auth/dex/callback'
+        name: 'LitmusPortalAuthBackend'
+        secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+    
+    oauth2:
+        skipApprovalScreen: true
+
+    connectors:
+      - type: google
+        id: google
+        name: Google
+        config:
+          clientID: 789438490231-pt50g50doumu9kit7nccdknsa3b37gvk.apps.googleusercontent.com
+          clientSecret: UqSikOn4zN_9_vA9m12eZHNu
+          redirectURI: http://127.0.0.1:5556/dex/callback
+
+      - type: github
+        id: github
+        name: GitHub
+        config:
+          clientID: 38f2d6bf813bc4899931
+          clientSecret: 66481ead99369cc9e4a9f40ffa47198b2243a2c8
+          redirectURI: http://192.168.49.2:32000/callback
+
+---
+# ClusterRole for DexServer
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: litmus-dex-server
+rules:
+  - apiGroups: [dex.coreos.com]
+    resources: [authcodes, authrequests, connectors, devicerequests, connectors, devicerequests, devicetokens, oauth2clients, oflinesessionses, passwords, refreshtokens, signingkeies]
+    verbs: [delete,deletecollection,get,list,patch,create,update,watch]
+---
+# ClusterRoleBinding for DexServer
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: litmus-dex-server-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: litmus-dex-server
+subjects:
+  - kind: ServiceAccount
+    name: litmus-server-account
+    namespace: litmus
+---
+# Exposed service for DexServer
+apiVersion: v1
+kind: Service
+metadata:
+  name: litmusportal-dex-service
+  namespace: litmus
+spec:
+  type: NodePort
+  ports:
+    - name: dex-server
+      port: 80
+      protocol: TCP
+      targetPort: 5556
+      nodePort: 32000
+  selector:
+    component: litmusportal-dex-server
+---
